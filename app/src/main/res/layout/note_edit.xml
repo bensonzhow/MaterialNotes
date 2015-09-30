@@ -87,7 +87,7 @@
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent">
 
-                    <net.micode.notes.ui.NoteEditText
+                    <com.songcode.materialnotes.ui.NoteEditText
                         android:id="@+id/note_edit_view"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
