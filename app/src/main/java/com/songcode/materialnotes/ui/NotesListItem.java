@@ -100,20 +100,22 @@ public class NotesListItem extends LinearLayout {
     }
 
     private void setBackground(NoteItemData data) {
-        int id = data.getBgColorId();
-        if (data.getType() == Notes.TYPE_NOTE) {
-            if (data.isSingle() || data.isOneFollowingFolder()) {
-                setBackgroundResource(NoteItemBgResources.getNoteBgSingleRes(id));
-            } else if (data.isLast()) {
-                setBackgroundResource(NoteItemBgResources.getNoteBgLastRes(id));
-            } else if (data.isFirst() || data.isMultiFollowingFolder()) {
-                setBackgroundResource(NoteItemBgResources.getNoteBgFirstRes(id));
-            } else {
-                setBackgroundResource(NoteItemBgResources.getNoteBgNormalRes(id));
-            }
-        } else {
-            setBackgroundResource(NoteItemBgResources.getFolderBgRes());
-        }
+//        int id = data.getBgColorId();
+//        //记工
+//        if (data.getType() == Notes.TYPE_NOTE) {
+//            if (data.isSingle() || data.isOneFollowingFolder()) {
+//                setBackgroundResource(NoteItemBgResources.getNoteBgSingleRes(id));
+//            } else if (data.isLast()) {
+//                setBackgroundResource(NoteItemBgResources.getNoteBgLastRes(id));
+//            } else if (data.isFirst() || data.isMultiFollowingFolder()) {
+//                setBackgroundResource(NoteItemBgResources.getNoteBgFirstRes(id));
+//            } else {
+//                setBackgroundResource(NoteItemBgResources.getNoteBgNormalRes(id));
+//            }
+//        } else {
+//            //文件夹
+//            setBackgroundResource(NoteItemBgResources.getFolderBgRes());
+//        }
     }
 
     public NoteItemData getItemData() {

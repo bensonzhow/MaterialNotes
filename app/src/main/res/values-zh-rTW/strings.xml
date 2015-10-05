@@ -17,13 +17,13 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_name">便簽</string>
-    <string name="app_widget2x2">便簽2x2</string>
-    <string name="app_widget4x4">便簽4x4</string>
-    <string name="widget_havenot_content">沒有關聯內容，點擊新建便簽。</string>
+    <string name="app_name">記工</string>
+    <string name="app_widget2x2">記工2x2</string>
+    <string name="app_widget4x4">記工4x4</string>
+    <string name="widget_havenot_content">沒有關聯內容，點擊新建記工。</string>
     <string name="widget_under_visit_mode">訪客模式下，便籤內容不可見</string>
     <string name="notelist_string_info">...</string>
-    <string name="notelist_menu_new">新建便簽</string>
+    <string name="notelist_menu_new">新建記工</string>
     <string name="delete_remind_time_message">成功刪除提醒</string>
     <string name="set_remind_time_message">創建提醒</string>
     <string name="note_alert_expired">已過期</string>
@@ -70,7 +70,7 @@
     <string name="alert_title_delete">刪除</string>
     <string name="alert_message_delete_notes">确认要刪除所選的 %d 條便籤嗎?</string>
     <string name="alert_message_delete_note">确认要删除該條便籤嗎?</string>
-    <string name="alert_message_delete_folder">確認刪除檔夾及所包含的便簽嗎？</string>
+    <string name="alert_message_delete_folder">確認刪除檔夾及所包含的記工嗎？</string>
     <string name="error_sdcard_unmounted">SD卡被佔用，不能操作</string>
     <string name="error_sdcard_export">導出TXT時發生錯誤，請檢查SD卡</string>
     <string name="error_note_not_exist">要查看的便籤不存在</string>
@@ -80,7 +80,7 @@
     <string name="failed_sdcard_export">導出失敗</string>
     <string name="format_exported_file_location">已將文本文件(%1$s)導出至SD(%2$s)目錄</string>
     <!-- Sync -->
-    <string name="ticker_syncing">同步便簽...</string>
+    <string name="ticker_syncing">同步記工...</string>
     <string name="ticker_success">同步成功</string>
     <string name="ticker_fail">同步失敗</string>
     <string name="ticker_cancel">同步已取消</string>
@@ -94,7 +94,7 @@
     <!-- Preferences -->
     <string name="preferences_title">設置</string>
     <string name="preferences_account_title">同步賬號</string>
-    <string name="preferences_account_summary">与google task同步便簽記錄</string>
+    <string name="preferences_account_summary">与google task同步記工記錄</string>
     <string name="preferences_last_sync_time">上次同步于 %1$s</string>
     <string name="preferences_add_account">添加賬號</string>
     <string name="preferences_menu_change_account">更換賬號</string>
@@ -104,8 +104,8 @@
     <string name="preferences_button_sync_cancel">取消同步</string>
     <string name="preferences_dialog_change_account_title">當前帳號 %1$s</string>
     <string name="preferences_dialog_change_account_warn_msg">如更換同步帳號，過去的帳號同步信息將被清空，再次切換的同時可能會造成數據重復</string>
-    <string name="preferences_dialog_select_account_title">同步便簽</string>
-    <string name="preferences_dialog_select_account_tips">請選擇google帳號，便簽將與該帳號的google task內容同步。</string>
+    <string name="preferences_dialog_select_account_title">同步記工</string>
+    <string name="preferences_dialog_select_account_tips">請選擇google帳號，記工將與該帳號的google task內容同步。</string>
     <string name="preferences_toast_cannot_change_account">正在同步中，不能修改同步帳號</string>
     <string name="preferences_toast_success_set_accout">同步帳號已設置為%1$s</string>
     <string name="preferences_bg_random_appear_title">新建便籤背景顏色隨機</string>

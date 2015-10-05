@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="start"
+    android:background="#DDDDDD"
+    android:clickable="true"
+    android:elevation="4dp"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/hero"
+        android:gravity="left|bottom"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/margin_layout_normal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:shadowColor="@color/background_floating_material_dark"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="2"
+            android:text="@string/app_name"
+            android:textColor="@color/almostWhite"
+            android:textSize="@dimen/text_font_size_super" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_layout_large"
+            android:layout_marginTop="@dimen/margin_layout_normal"
+            android:shadowColor="@color/background_floating_material_dark"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="2"
+            android:text="###############"
+            android:textColor="@color/almostWhite"
+            android:textSize="@dimen/text_font_size_normal" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/margin_layout_normal"
+        android:gravity="center_vertical">
+        <ListView
+            android:id="@+id/navigation_drawer_items_list_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:dividerHeight="1px"></ListView>
+    </LinearLayout>
+</LinearLayout>
