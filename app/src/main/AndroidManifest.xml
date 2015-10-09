@@ -53,8 +53,7 @@
         <activity
             android:name="com.songcode.materialnotes.ui.NoteEditActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:launchMode="singleTop"
-            android:theme="@style/NoteTheme" >
+            android:launchMode="singleTop" >
 
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

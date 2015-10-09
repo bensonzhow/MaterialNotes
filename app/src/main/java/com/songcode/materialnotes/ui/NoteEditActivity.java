@@ -30,11 +30,13 @@ import android.content.SharedPreferences;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.text.style.BackgroundColorSpan;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -60,6 +62,7 @@ import com.songcode.materialnotes.model.WorkingNote.NoteSettingChangedListener;
 import com.songcode.materialnotes.tool.DataUtils;
 import com.songcode.materialnotes.tool.ResourceParser;
 import com.songcode.materialnotes.tool.ResourceParser.TextAppearanceResources;
+import com.songcode.materialnotes.tool.TransitionHelper;
 import com.songcode.materialnotes.ui.DateTimePickerDialog.OnDateTimeSetListener;
 import com.songcode.materialnotes.ui.NoteEditText.OnTextViewChangeListener;
 import com.songcode.materialnotes.widget.NoteWidgetProvider_2x;
@@ -72,7 +75,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-public class NoteEditActivity extends Activity implements OnClickListener,
+public class NoteEditActivity extends TransitionHelper.BaseActivity implements OnClickListener,
         NoteSettingChangedListener, OnTextViewChangeListener {
     private class HeadViewHolder {
         public TextView tvModified;
@@ -121,6 +124,10 @@ public class NoteEditActivity extends Activity implements OnClickListener,
     private static final String TAG = "NoteEditActivity";
 
     private HeadViewHolder mNoteHeaderHolder;
+
+    private View animBackGroudView;
+
+    private Toolbar mToolbar;
 
     private View mHeadViewPanel;
 
@@ -319,7 +326,7 @@ public class NoteEditActivity extends Activity implements OnClickListener,
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         /**
          * For new note without note id, we should firstly save it to
@@ -331,6 +338,11 @@ public class NoteEditActivity extends Activity implements OnClickListener,
         }
         outState.putLong(Intent.EXTRA_UID, mWorkingNote.getNoteId());
         Log.d(TAG, "Save working note id: " + mWorkingNote.getNoteId() + " onSaveInstanceState");
+    }
+
+    @Override
+    public View onCreateView(String name, Context context, AttributeSet attrs) {
+        return super.onCreateView(name, context, attrs);
     }
 
     @Override
@@ -372,8 +384,12 @@ public class NoteEditActivity extends Activity implements OnClickListener,
         mNoteHeaderHolder.ibSetBgColor = (ImageView) findViewById(R.id.btn_set_bg_color);
         mNoteHeaderHolder.ibSetBgColor.setOnClickListener(this);
         mNoteEditor = (EditText) findViewById(R.id.note_edit_view);
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         mNoteEditorPanel = findViewById(R.id.sv_note_edit);
         mNoteBgColorSelector = findViewById(R.id.note_bg_color_selector);
+        animBackGroudView = findViewById(R.id.anim_back_groud_layout);
         for (int id : sBgSelectorBtnsMap.keySet()) {
             ImageView iv = (ImageView) findViewById(id);
             iv.setOnClickListener(this);
@@ -430,7 +446,7 @@ public class NoteEditActivity extends Activity implements OnClickListener,
         if (id == R.id.btn_set_bg_color) {
             mNoteBgColorSelector.setVisibility(View.VISIBLE);
             findViewById(sBgSelectorSelectionMap.get(mWorkingNote.getBgColorId())).setVisibility(
-                    -                    View.VISIBLE);
+                    -View.VISIBLE);
         } else if (sBgSelectorBtnsMap.containsKey(id)) {
             findViewById(sBgSelectorSelectionMap.get(mWorkingNote.getBgColorId())).setVisibility(
                     View.GONE);
