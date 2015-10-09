@@ -67,12 +67,44 @@
         <item name="android:visibility">gone</item>
     </style>
 
-    <style name="AppTheme" parent="AppTheme.Base"/>
-
-    <style name="AppTheme.Base" parent="Theme.AppCompat.Light">
+    <style name="AppTheme" parent="AppTheme.Base">
         <item name="colorPrimary">@color/primaryColor</item>
         <item name="colorPrimaryDark">@color/primaryColorDark</item>
         <item name="colorAccent">@color/primaryColor</item>
+    </style>
+
+    <style name="AppThemeBlue" parent="AppTheme.Base">
+        <item name="colorPrimary">@color/primary_color_blue</item>
+        <item name="colorPrimaryDark">@color/primary_color_blue_dark</item>
+        <item name="colorAccent">@color/primary_color_blue</item>
+    </style>
+
+    <style name="AppThemeRed" parent="AppTheme.Base">
+        <item name="colorPrimary">@color/primary_color_red</item>
+        <item name="colorPrimaryDark">@color/primary_color_red_dark</item>
+        <item name="colorAccent">@color/primary_color_red</item>
+    </style>
+
+    <style name="AppThemeGreen" parent="AppTheme.Base">
+        <item name="colorPrimary">@color/primary_color_green</item>
+        <item name="colorPrimaryDark">@color/primary_color_green_dark</item>
+        <item name="colorAccent">@color/primary_color_green</item>
+    </style>
+
+    <style name="AppThemeWhite" parent="AppTheme.Base">
+        <item name="colorPrimary">@color/primary_color_white</item>
+        <item name="colorPrimaryDark">@color/primary_color_white_dark</item>
+        <item name="colorAccent">@color/primary_color_white</item>
+    </style>
+
+    <style name="AppThemeBrown" parent="AppTheme.Base">
+        <item name="colorPrimary">@color/primary_color_brown</item>
+        <item name="colorPrimaryDark">@color/primary_color_brown_dark</item>
+        <item name="colorAccent">@color/primary_color_brown</item>
+    </style>
+
+    <style name="AppTheme.Base" parent="Theme.AppCompat.Light">
+
         <item name="windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>

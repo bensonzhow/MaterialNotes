@@ -33,6 +33,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -238,6 +239,9 @@ public class NotesListActivity extends ActionBarActivity implements OnClickListe
         mActionBar = getSupportActionBar();
         mActionBar.setDisplayHomeAsUpEnabled(true);
         mActionBar.setTitle(getResources().getString(R.string.app_name));
+        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.app_name, R.string.app_name);
+        actionBarDrawerToggle.syncState();
+        mDrawerLayout.setDrawerListener(actionBarDrawerToggle);
 
         //listview
         mNotesListView = (ListView) findViewById(R.id.notes_list);

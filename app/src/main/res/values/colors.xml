@@ -17,8 +17,28 @@
 
 <resources>
     <color name="user_query_highlight">#335b5b5b</color>
-     <color name="primaryColor">@android:color/holo_purple</color>
-     <color name="primaryColorDark">#ccaa66cc</color>
-     <color name="primaryColorLight">@android:color/holo_purple</color>
-     <color name="almostWhite">#EEEEEE</color>
+    <color name="primaryColor">#3f51B5</color>
+    <color name="primaryColorDark">#3F51B5</color>
+    <color name="primaryColorLight">#C5CAE9</color>
+    <color name="almostWhite">#EEEEEE</color>
+    <!-- blue theme-->
+    <color name="primary_color_blue">#2196F3</color>
+    <color name="primary_color_blue_dark">#1976D2</color>
+    <color name="primary_color_blue_light">#BBDEFB</color>
+    <!--green theme -->
+    <color name="primary_color_green">#4CAF50</color>
+    <color name="primary_color_green_dark">#388E3C</color>
+    <color name="primary_color_green_light">#C8E6C9</color>
+    <!--brown theme -->
+    <color name="primary_color_brown">#795548</color>
+    <color name="primary_color_brown_dark">#5D4037</color>
+    <color name="primary_color_brown_light">#D7CCC8</color>
+    <!--red theme -->
+    <color name="primary_color_red">#F44336</color>
+    <color name="primary_color_red_dark">#D32F2F</color>
+    <color name="primary_color_red_light">#FFCDD2</color>
+    <!--white theme -->
+    <color name="primary_color_white">#9E9E9E</color>
+    <color name="primary_color_white_dark">#616161</color>
+    <color name="primary_color_white_light">#F5F5F5</color>
 </resources>

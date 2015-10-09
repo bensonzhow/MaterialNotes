@@ -40,21 +40,49 @@ public class ResourceParser {
     public static final int BG_DEFAULT_FONT_SIZE = TEXT_MEDIUM;
 
     public static class NoteBgResources {
+//        private final static int [] BG_EDIT_RESOURCES = new int [] {
+//            R.drawable.edit_yellow,
+//            R.drawable.edit_blue,
+//            R.drawable.edit_white,
+//            R.drawable.edit_green,
+//            R.drawable.edit_red
+//        };
+//
+//        private final static int [] BG_EDIT_TITLE_RESOURCES = new int [] {
+//            R.drawable.edit_title_yellow,
+//            R.drawable.edit_title_blue,
+//            R.drawable.edit_title_white,
+//            R.drawable.edit_title_green,
+//            R.drawable.edit_title_red
+//        };
+
         private final static int [] BG_EDIT_RESOURCES = new int [] {
-            R.drawable.edit_yellow,
-            R.drawable.edit_blue,
-            R.drawable.edit_white,
-            R.drawable.edit_green,
-            R.drawable.edit_red
+            R.color.primary_color_blue_light,
+            R.color.primary_color_red_light,
+            R.color.primary_color_green_light,
+            R.color.primary_color_white_light,
+            R.color.primary_color_brown_light,
         };
 
         private final static int [] BG_EDIT_TITLE_RESOURCES = new int [] {
-            R.drawable.edit_title_yellow,
-            R.drawable.edit_title_blue,
-            R.drawable.edit_title_white,
-            R.drawable.edit_title_green,
-            R.drawable.edit_title_red
+            R.color.primary_color_blue,
+            R.color.primary_color_red,
+            R.color.primary_color_green,
+            R.color.primary_color_white,
+            R.color.primary_color_brown,
         };
+
+        private final static int [] THEME_TOOLBAR_STYLE = new int [] {
+                R.style.AppThemeBlue,
+                R.style.AppThemeRed,
+                R.style.AppThemeGreen,
+                R.style.AppThemeWhite,
+                R.style.AppThemeBrown,
+        };
+
+        public static int getNoteToolBarThemeStyle(int id) {
+            return THEME_TOOLBAR_STYLE[id];
+        }
 
         public static int getNoteBgResource(int id) {
             return BG_EDIT_RESOURCES[id];

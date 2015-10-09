@@ -16,7 +16,6 @@
 
 package com.songcode.materialnotes.ui;
 
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
@@ -31,9 +30,11 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.text.format.DateUtils;
 import android.text.style.BackgroundColorSpan;
 import android.util.AttributeSet;
@@ -78,7 +79,6 @@ import java.util.regex.Pattern;
 public class NoteEditActivity extends TransitionHelper.BaseActivity implements OnClickListener,
         NoteSettingChangedListener, OnTextViewChangeListener {
     private class HeadViewHolder {
-        public TextView tvModified;
 
         public ImageView ivAlertIcon;
 
@@ -126,6 +126,8 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
     private HeadViewHolder mNoteHeaderHolder;
 
     private View animBackGroudView;
+
+    private View mBackGroudView;
 
     private Toolbar mToolbar;
 
@@ -287,19 +289,30 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         for (Integer id : sBgSelectorSelectionMap.keySet()) {
             findViewById(sBgSelectorSelectionMap.get(id)).setVisibility(View.GONE);
         }
-        mHeadViewPanel.setBackgroundResource(mWorkingNote.getTitleBgResId());
-        mNoteEditorPanel.setBackgroundResource(mWorkingNote.getBgColorResId());
+        setNoteTheme();
 
-        mNoteHeaderHolder.tvModified.setText(DateUtils.formatDateTime(this,
+        String dateStr = DateUtils.formatDateTime(this,
                 mWorkingNote.getModifiedDate(), DateUtils.FORMAT_SHOW_DATE
                         | DateUtils.FORMAT_NUMERIC_DATE | DateUtils.FORMAT_SHOW_TIME
-                        | DateUtils.FORMAT_SHOW_YEAR));
+                        | DateUtils.FORMAT_SHOW_YEAR);
+        mToolbar.setSubtitle(dateStr);
+        mToolbar.setTitle(getTitleStrByContent(mWorkingNote.getContent()));
 
         /**
          * TODO: Add the menu for setting alert. Currently disable it because the DateTimePicker
          * is not ready
          */
         showAlertHeader();
+    }
+
+    private void setNoteTheme() {
+        int primaryColorId = mWorkingNote.getTitleBgResId();
+        mHeadViewPanel.setBackgroundResource(primaryColorId);
+        mNoteEditorPanel.setBackgroundResource(mWorkingNote.getBgColorResId());
+        setTheme(mWorkingNote.getToolbarThemeStyle());
+        int primaryColor = getResources().getColor(primaryColorId);
+        mToolbar.setBackgroundColor(primaryColor);
+        mBackGroudView.setBackgroundColor(primaryColor);
     }
 
     private void showAlertHeader() {
@@ -377,16 +390,18 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
 
     private void initResources() {
         mHeadViewPanel = findViewById(R.id.note_title);
+        mBackGroudView = findViewById(R.id.note_bg);
         mNoteHeaderHolder = new HeadViewHolder();
-        mNoteHeaderHolder.tvModified = (TextView) findViewById(R.id.tv_modified_date);
         mNoteHeaderHolder.ivAlertIcon = (ImageView) findViewById(R.id.iv_alert_icon);
         mNoteHeaderHolder.tvAlertDate = (TextView) findViewById(R.id.tv_alert_date);
         mNoteHeaderHolder.ibSetBgColor = (ImageView) findViewById(R.id.btn_set_bg_color);
         mNoteHeaderHolder.ibSetBgColor.setOnClickListener(this);
         mNoteEditor = (EditText) findViewById(R.id.note_edit_view);
+        //toolbar
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         mNoteEditorPanel = findViewById(R.id.sv_note_edit);
         mNoteBgColorSelector = findViewById(R.id.note_bg_color_selector);
         animBackGroudView = findViewById(R.id.anim_back_groud_layout);
@@ -492,8 +507,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
     public void onBackgroundColorChanged() {
         findViewById(sBgSelectorSelectionMap.get(mWorkingNote.getBgColorId())).setVisibility(
                 View.VISIBLE);
-        mNoteEditorPanel.setBackgroundResource(mWorkingNote.getBgColorResId());
-        mHeadViewPanel.setBackgroundResource(mWorkingNote.getTitleBgResId());
+        setNoteTheme();
     }
 
     @Override
@@ -524,6 +538,9 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                break;
             case R.id.menu_new_note:
                 createNewNote();
                 break;
@@ -885,5 +902,13 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
 
     private void showToast(int resId, int duration) {
         Toast.makeText(this, resId, duration).show();
+    }
+
+    private String getTitleStrByContent(String str) {
+        String snipppet = DataUtils.getFormattedSnippet(str);
+        if (snipppet != null && snipppet.length() > 6) {
+            snipppet = snipppet.substring(0, 7) + "...";
+        }
+        return snipppet;
     }
 }

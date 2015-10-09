@@ -10,8 +10,8 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/hero"
+        android:layout_height="100dp"
+        android:background="@color/primary_color_blue"
         android:gravity="left|bottom"
         android:orientation="vertical"
         android:paddingLeft="@dimen/margin_layout_normal">
@@ -25,12 +25,12 @@
             android:shadowRadius="2"
             android:text="@string/app_name"
             android:textColor="@color/almostWhite"
-            android:textSize="@dimen/text_font_size_super" />
+            android:textSize="@dimen/text_font_size_normal" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/margin_layout_large"
+            android:layout_marginBottom="@dimen/margin_layout_normal"
             android:layout_marginTop="@dimen/margin_layout_normal"
             android:shadowColor="@color/background_floating_material_dark"
             android:shadowDx="2"

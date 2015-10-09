@@ -322,6 +322,10 @@ public class WorkingNote {
         return NoteBgResources.getNoteTitleBgResource(mBgColorId);
     }
 
+    public int getToolbarThemeStyle() {
+        return NoteBgResources.getNoteToolBarThemeStyle(mBgColorId);
+    }
+
     public int getCheckListMode() {
         return mMode;
     }
