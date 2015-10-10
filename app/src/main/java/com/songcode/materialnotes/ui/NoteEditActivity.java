@@ -17,6 +17,9 @@
 package com.songcode.materialnotes.ui;
 
 import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
@@ -32,6 +35,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -48,6 +52,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewAnimationUtils;
 import android.view.WindowManager;
+import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
@@ -83,6 +88,8 @@ import java.util.regex.Pattern;
 
 public class NoteEditActivity extends TransitionHelper.BaseActivity implements OnClickListener,
         NoteSettingChangedListener, OnTextViewChangeListener {
+    private static final int ANIM_DURATION = 600;
+
     private class HeadViewHolder {
 
         public ImageView ivAlertIcon;
@@ -93,6 +100,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
     }
 
     private static final Map<Integer, Integer> sBgSelectorBtnsMap = new HashMap<Integer, Integer>();
+
     static {
         sBgSelectorBtnsMap.put(R.id.iv_bg_yellow, ResourceParser.YELLOW);
         sBgSelectorBtnsMap.put(R.id.iv_bg_red, ResourceParser.RED);
@@ -102,6 +110,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
     }
 
     private static final Map<Integer, Integer> sBgSelectorSelectionMap = new HashMap<Integer, Integer>();
+
     static {
         sBgSelectorSelectionMap.put(ResourceParser.YELLOW, R.id.iv_bg_yellow_select);
         sBgSelectorSelectionMap.put(ResourceParser.RED, R.id.iv_bg_red_select);
@@ -111,6 +120,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
     }
 
     private static final Map<Integer, Integer> sFontSizeBtnsMap = new HashMap<Integer, Integer>();
+
     static {
         sFontSizeBtnsMap.put(R.id.ll_font_large, ResourceParser.TEXT_LARGE);
         sFontSizeBtnsMap.put(R.id.ll_font_small, ResourceParser.TEXT_SMALL);
@@ -119,6 +129,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
     }
 
     private static final Map<Integer, Integer> sFontSelectorSelectionMap = new HashMap<Integer, Integer>();
+
     static {
         sFontSelectorSelectionMap.put(ResourceParser.TEXT_LARGE, R.id.iv_large_select);
         sFontSelectorSelectionMap.put(ResourceParser.TEXT_SMALL, R.id.iv_small_select);
@@ -133,6 +144,8 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
     private View animBackGroudView;
 
     private View mAnimNewNoteView;
+
+    private View mAnimTargetView;
 
     private View mBackGroudView;
 
@@ -227,7 +240,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
                     return false;
                 }
             }
-        } else if(TextUtils.equals(Intent.ACTION_INSERT_OR_EDIT, intent.getAction())) {
+        } else if (TextUtils.equals(Intent.ACTION_INSERT_OR_EDIT, intent.getAction())) {
             // New note
             long folderId = intent.getLongExtra(Notes.INTENT_EXTRA_FOLDER_ID, 0);
             int widgetId = intent.getIntExtra(Notes.INTENT_EXTRA_WIDGET_ID,
@@ -333,7 +346,8 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         } else {
             mNoteHeaderHolder.tvAlertDate.setVisibility(View.GONE);
             mNoteHeaderHolder.ivAlertIcon.setVisibility(View.GONE);
-        };
+        }
+        ;
     }
 
     @Override
@@ -379,7 +393,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
     }
 
     private boolean inRangeOfView(View view, MotionEvent ev) {
-        int []location = new int[2];
+        int[] location = new int[2];
         view.getLocationOnScreen(location);
         int x = location[0];
         int y = location[1];
@@ -387,8 +401,8 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
                 || ev.getX() > (x + view.getWidth())
                 || ev.getY() < y
                 || ev.getY() > (y + view.getHeight())) {
-                    return false;
-                }
+            return false;
+        }
         return true;
     }
 
@@ -415,6 +429,8 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         }
 
         mAnimNewNoteView = findViewById(R.id.anim_new_note_view);
+        mAnimTargetView = findViewById(R.id.anim_new_note_layout);
+
         for (int id : sBgSelectorBtnsMap.keySet()) {
             ImageView iv = (ImageView) findViewById(id);
             iv.setOnClickListener(this);
@@ -424,7 +440,8 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         for (int id : sFontSizeBtnsMap.keySet()) {
             View view = findViewById(id);
             view.setOnClickListener(this);
-        };
+        }
+        ;
         mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         mFontSizeId = mSharedPrefs.getInt(PREFERENCE_FONT_SIZE, ResourceParser.BG_DEFAULT_FONT_SIZE);
         /**
@@ -432,11 +449,10 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
          * The id may larger than the length of resources, in this case,
          * return the {@link ResourceParser#BG_DEFAULT_FONT_SIZE}
          */
-        if(mFontSizeId >= TextAppearanceResources.getResourcesSize()) {
+        if (mFontSizeId >= TextAppearanceResources.getResourcesSize()) {
             mFontSizeId = ResourceParser.BG_DEFAULT_FONT_SIZE;
         }
         mEditTextList = (LinearLayout) findViewById(R.id.note_edit_list);
-
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && TextUtils.equals(Intent.ACTION_INSERT_OR_EDIT, getIntent().getAction())) {
@@ -444,21 +460,20 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
                 @Override
                 public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
                     mAnimNewNoteView.removeOnLayoutChangeListener(this);
-                    animateRevealShow(findViewById(R.id.anim_new_note_layout), mAnimNewNoteView);
+                    animateRevealShow(mAnimTargetView, mAnimNewNoteView);
                 }
             });
         }
     }
 
-    public void animateRevealShow(View viewRoot, View targetView) {
-        final InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-        // 显示软键盘
-        int cx = targetView.getLeft() + (targetView.getWidth()/2); //middle of button
-        int cy = targetView.getTop() + (targetView.getHeight()/2); //middle of button
+    private void animateRevealShow(View targetview, View startView) {
+        final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        int cx = startView.getLeft() + (startView.getWidth() / 2); //middle of button
+        int cy = startView.getTop() + (startView.getHeight() / 2); //middle of button
         int radius = (int) Math.sqrt(Math.pow(cx, 2) + Math.pow(cy, 2)); //hypotenuse to top left
 
-        Animator anim = ViewAnimationUtils.createCircularReveal(viewRoot, cx, cy, 0, radius);
-        viewRoot.setVisibility(View.VISIBLE);
+        Animator anim = ViewAnimationUtils.createCircularReveal(targetview, cx, cy, 0, radius);
+        targetview.setVisibility(View.VISIBLE);
         anim.setInterpolator(new DecelerateInterpolator());
         anim.addListener(new Animator.AnimatorListener() {
             @Override
@@ -482,16 +497,46 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
 
             }
         });
-        anim.setDuration(600);
+        anim.setDuration(ANIM_DURATION);
+        anim.start();
+    }
+
+    private void animateRevealHide(final View targetview, View startView) {
+        int cx = startView.getLeft() + (startView.getWidth()/2); //middle of button
+        int cy = startView.getTop() + (startView.getHeight()/2); //middle of button
+        int radius = (int) Math.sqrt(Math.pow(cx, 2) + Math.pow(cy, 2)); //hypotenuse to top left
+
+        Animator anim = ViewAnimationUtils.createCircularReveal(targetview, cx, cy, radius, 0);
+        anim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                targetview.setVisibility(View.INVISIBLE);
+            }
+        });
+        //anim.setInterpolator(new AccelerateInterpolator());
+        anim.setDuration(ANIM_DURATION);
         anim.start();
 
+        Integer colorTo = getResources().getColor(R.color.primaryColor);
+        Integer colorFrom = getResources().getColor(android.R.color.white);
+        ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
+        colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animator) {
+                targetview.setBackgroundColor((Integer)animator.getAnimatedValue());
+            }
 
+        });
+        colorAnimation.setInterpolator(new AccelerateInterpolator(2));
+        colorAnimation.setDuration(ANIM_DURATION);
+        colorAnimation.start();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if(saveNote()) {
+        if (saveNote()) {
             Log.d(TAG, "Note data was saved with length:" + mWorkingNote.getContent().length());
         }
         clearSettingState();
@@ -508,8 +553,8 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
             return;
         }
 
-        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, new int[] {
-            mWorkingNote.getWidgetId()
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, new int[]{
+                mWorkingNote.getWidgetId()
         });
 
         sendBroadcast(intent);
@@ -545,12 +590,12 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
 
     @Override
     public void onBackPressed() {
-        if(clearSettingState()) {
+        if (clearSettingState()) {
             return;
         }
-
         saveNote();
-        super.onBackPressed();
+        animateRevealHide(mAnimTargetView, mAnimNewNoteView);
+        ActivityCompat.finishAfterTransition(this);
     }
 
     private boolean clearSettingState() {
@@ -650,7 +695,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         DateTimePickerDialog d = new DateTimePickerDialog(this, System.currentTimeMillis());
         d.setOnDateTimeSetListener(new OnDateTimeSetListener() {
             public void OnDateTimeSet(AlertDialog dialog, long date) {
-                mWorkingNote.setAlertDate(date	, true);
+                mWorkingNote.setAlertDate(date, true);
             }
         });
         d.show();
@@ -719,7 +764,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
             PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
             AlarmManager alarmManager = ((AlarmManager) getSystemService(ALARM_SERVICE));
             showAlertHeader();
-            if(!set) {
+            if (!set) {
                 alarmManager.cancel(pendingIntent);
             } else {
                 alarmManager.set(AlarmManager.RTC_WAKEUP, date, pendingIntent);
@@ -752,7 +797,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
 
         mEditTextList.removeViewAt(index);
         NoteEditText edit = null;
-        if(index == 0) {
+        if (index == 0) {
             edit = (NoteEditText) mEditTextList.getChildAt(0).findViewById(
                     R.id.et_edit_text);
         } else {
@@ -769,7 +814,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         /**
          * Should not happen, check for debug
          */
-        if(index > mEditTextList.getChildCount()) {
+        if (index > mEditTextList.getChildCount()) {
             Log.e(TAG, "Index out of mEditTextList boundrary, should not happen");
         }
 
@@ -789,7 +834,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         String[] items = text.split("\n");
         int index = 0;
         for (String item : items) {
-            if(!TextUtils.isEmpty(item)) {
+            if (!TextUtils.isEmpty(item)) {
                 mEditTextList.addView(getListItem(item, index));
                 index++;
             }
@@ -854,7 +899,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
             Log.e(TAG, "Wrong index, should not happen");
             return;
         }
-        if(hasText) {
+        if (hasText) {
             mEditTextList.getChildAt(index).findViewById(R.id.cb_edit_item).setVisibility(View.VISIBLE);
         } else {
             mEditTextList.getChildAt(index).findViewById(R.id.cb_edit_item).setVisibility(View.GONE);
