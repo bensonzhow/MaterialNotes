@@ -90,11 +90,6 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         NoteSettingChangedListener, OnTextViewChangeListener {
 
     private class HeadViewHolder {
-
-        public ImageView ivAlertIcon;
-
-        public TextView tvAlertDate;
-
         public ImageView ibSetBgColor;
     }
 
@@ -149,8 +144,6 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
     private View mBackGroudView;
 
     private Toolbar mToolbar;
-
-    private View mHeadViewPanel;
 
     private View mNoteBgColorSelector;
 
@@ -309,44 +302,23 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
 
         String dateStr = DateUtils.formatDateTime(this,
                 mWorkingNote.getModifiedDate(), DateUtils.FORMAT_SHOW_DATE
-                        | DateUtils.FORMAT_NUMERIC_DATE | DateUtils.FORMAT_SHOW_TIME
-                        | DateUtils.FORMAT_SHOW_YEAR);
-        mToolbar.setSubtitle(dateStr);
-        mToolbar.setTitle(getTitleStrByContent(mWorkingNote.getContent()));
+                        |  DateUtils.FORMAT_SHOW_YEAR );
+        mToolbar.setTitle(dateStr);
 
         /**
          * TODO: Add the menu for setting alert. Currently disable it because the DateTimePicker
          * is not ready
          */
-        showAlertHeader();
+        mToolbar.setSubtitle(getSubTitle());
     }
 
     private void setNoteTheme() {
         int primaryColorId = mWorkingNote.getTitleBgResId();
-        mHeadViewPanel.setBackgroundResource(primaryColorId);
         mNoteEditorPanel.setBackgroundResource(mWorkingNote.getBgColorResId());
         setTheme(mWorkingNote.getToolbarThemeStyle());
         int primaryColor = getResources().getColor(primaryColorId);
         mToolbar.setBackgroundColor(primaryColor);
         mBackGroudView.setBackgroundColor(primaryColor);
-    }
-
-    private void showAlertHeader() {
-        if (mWorkingNote.hasClockAlert()) {
-            long time = System.currentTimeMillis();
-            if (time > mWorkingNote.getAlertDate()) {
-                mNoteHeaderHolder.tvAlertDate.setText(R.string.note_alert_expired);
-            } else {
-                mNoteHeaderHolder.tvAlertDate.setText(DateUtils.getRelativeTimeSpanString(
-                        mWorkingNote.getAlertDate(), time, DateUtils.MINUTE_IN_MILLIS));
-            }
-            mNoteHeaderHolder.tvAlertDate.setVisibility(View.VISIBLE);
-            mNoteHeaderHolder.ivAlertIcon.setVisibility(View.VISIBLE);
-        } else {
-            mNoteHeaderHolder.tvAlertDate.setVisibility(View.GONE);
-            mNoteHeaderHolder.ivAlertIcon.setVisibility(View.GONE);
-        }
-        ;
     }
 
     @Override
@@ -406,11 +378,8 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
     }
 
     private void initResources() {
-        mHeadViewPanel = findViewById(R.id.note_title);
         mBackGroudView = findViewById(R.id.note_bg);
         mNoteHeaderHolder = new HeadViewHolder();
-        mNoteHeaderHolder.ivAlertIcon = (ImageView) findViewById(R.id.iv_alert_icon);
-        mNoteHeaderHolder.tvAlertDate = (TextView) findViewById(R.id.tv_alert_date);
         mNoteHeaderHolder.ibSetBgColor = (ImageView) findViewById(R.id.btn_set_bg_color);
         mNoteHeaderHolder.ibSetBgColor.setOnClickListener(this);
         mNoteEditor = (EditText) findViewById(R.id.note_edit_view);
@@ -766,7 +735,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
             intent.setData(ContentUris.withAppendedId(Notes.CONTENT_NOTE_URI, mWorkingNote.getNoteId()));
             PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
             AlarmManager alarmManager = ((AlarmManager) getSystemService(ALARM_SERVICE));
-            showAlertHeader();
+            mToolbar.setSubtitle(getSubTitle());
             if (!set) {
                 alarmManager.cancel(pendingIntent);
             } else {
@@ -1012,11 +981,19 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         Toast.makeText(this, resId, duration).show();
     }
 
-    private String getTitleStrByContent(String str) {
-        String snipppet = DataUtils.getFormattedSnippet(str);
-        if (snipppet != null && snipppet.length() > 6) {
-            snipppet = snipppet.substring(0, 7) + "...";
+    private String getSubTitle() {
+        String dateStr = DateUtils.formatDateTime(this, mWorkingNote.getModifiedDate(), DateUtils.FORMAT_SHOW_TIME);
+        if (mWorkingNote.hasClockAlert()) {
+            long time = System.currentTimeMillis();
+            String alertStr = "";
+            if (time > mWorkingNote.getAlertDate()) {
+                alertStr = getString(R.string.note_alert_expired);
+            } else {
+                alertStr = (String) DateUtils.getRelativeTimeSpanString(mWorkingNote.getAlertDate(), time, DateUtils.MINUTE_IN_MILLIS);
+            }
+            //中间空白符为emoji表情
+            return dateStr + " | ⏰️️" + alertStr;
         }
-        return snipppet;
+        return dateStr;
     }
 }
