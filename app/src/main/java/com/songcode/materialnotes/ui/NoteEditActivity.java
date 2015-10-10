@@ -16,6 +16,7 @@
 
 package com.songcode.materialnotes.ui;
 
+import android.animation.Animator;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
@@ -27,14 +28,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.text.format.DateUtils;
 import android.text.style.BackgroundColorSpan;
 import android.util.AttributeSet;
@@ -45,7 +46,10 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewAnimationUtils;
 import android.view.WindowManager;
+import android.view.animation.DecelerateInterpolator;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
@@ -60,6 +64,7 @@ import com.songcode.materialnotes.data.Notes;
 import com.songcode.materialnotes.data.Notes.TextNote;
 import com.songcode.materialnotes.model.WorkingNote;
 import com.songcode.materialnotes.model.WorkingNote.NoteSettingChangedListener;
+import com.songcode.materialnotes.tool.BitmapUtil;
 import com.songcode.materialnotes.tool.DataUtils;
 import com.songcode.materialnotes.tool.ResourceParser;
 import com.songcode.materialnotes.tool.ResourceParser.TextAppearanceResources;
@@ -126,6 +131,8 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
     private HeadViewHolder mNoteHeaderHolder;
 
     private View animBackGroudView;
+
+    private View mAnimNewNoteView;
 
     private View mBackGroudView;
 
@@ -220,9 +227,6 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
                     return false;
                 }
             }
-            getWindow().setSoftInputMode(
-                    WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
-                            | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         } else if(TextUtils.equals(Intent.ACTION_INSERT_OR_EDIT, intent.getAction())) {
             // New note
             long folderId = intent.getLongExtra(Notes.INTENT_EXTRA_FOLDER_ID, 0);
@@ -258,15 +262,15 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
                 mWorkingNote = WorkingNote.createEmptyNote(this, folderId, widgetId, widgetType,
                         bgResId);
             }
-
-            getWindow().setSoftInputMode(
-                    WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
-                            | WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
         } else {
             Log.e(TAG, "Intent not specified action, should not support");
             finish();
             return false;
         }
+
+        getWindow().setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
+                        | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         mWorkingNote.setOnSettingStatusChangedListener(this);
         return true;
     }
@@ -405,6 +409,12 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         mNoteEditorPanel = findViewById(R.id.sv_note_edit);
         mNoteBgColorSelector = findViewById(R.id.note_bg_color_selector);
         animBackGroudView = findViewById(R.id.anim_back_groud_layout);
+        //for anim backgroud
+        if (getIntent().hasExtra("bitmap_id")) {
+            animBackGroudView.setBackground(new BitmapDrawable(getResources(), BitmapUtil.fetchBitmapFromIntent(getIntent())));
+        }
+
+        mAnimNewNoteView = findViewById(R.id.anim_new_note_view);
         for (int id : sBgSelectorBtnsMap.keySet()) {
             ImageView iv = (ImageView) findViewById(id);
             iv.setOnClickListener(this);
@@ -426,6 +436,56 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
             mFontSizeId = ResourceParser.BG_DEFAULT_FONT_SIZE;
         }
         mEditTextList = (LinearLayout) findViewById(R.id.note_edit_list);
+
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && TextUtils.equals(Intent.ACTION_INSERT_OR_EDIT, getIntent().getAction())) {
+            mAnimNewNoteView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    mAnimNewNoteView.removeOnLayoutChangeListener(this);
+                    animateRevealShow(findViewById(R.id.anim_new_note_layout), mAnimNewNoteView);
+                }
+            });
+        }
+    }
+
+    public void animateRevealShow(View viewRoot, View targetView) {
+        final InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        // 显示软键盘
+        int cx = targetView.getLeft() + (targetView.getWidth()/2); //middle of button
+        int cy = targetView.getTop() + (targetView.getHeight()/2); //middle of button
+        int radius = (int) Math.sqrt(Math.pow(cx, 2) + Math.pow(cy, 2)); //hypotenuse to top left
+
+        Animator anim = ViewAnimationUtils.createCircularReveal(viewRoot, cx, cy, 0, radius);
+        viewRoot.setVisibility(View.VISIBLE);
+        anim.setInterpolator(new DecelerateInterpolator());
+        anim.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mNoteEditor.requestFocus();
+                imm.showSoftInput(mNoteEditor, 0);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+        anim.setDuration(600);
+        anim.start();
+
+
     }
 
     @Override

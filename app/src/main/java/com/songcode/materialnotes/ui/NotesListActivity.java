@@ -31,6 +31,8 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -71,8 +73,10 @@ import com.songcode.materialnotes.data.Notes.NoteColumns;
 import com.songcode.materialnotes.gtask.remote.GTaskSyncService;
 import com.songcode.materialnotes.model.WorkingNote;
 import com.songcode.materialnotes.tool.BackupUtils;
+import com.songcode.materialnotes.tool.BitmapUtil;
 import com.songcode.materialnotes.tool.DataUtils;
 import com.songcode.materialnotes.tool.ResourceParser;
+import com.songcode.materialnotes.tool.TransitionHelper;
 import com.songcode.materialnotes.ui.NotesListAdapter.AppWidgetAttribute;
 import com.songcode.materialnotes.widget.NoteWidgetProvider_2x;
 import com.songcode.materialnotes.widget.NoteWidgetProvider_4x;
@@ -511,9 +515,7 @@ public class NotesListActivity extends ActionBarActivity implements OnClickListe
             return false;
         }
 
-    }
-
-    ;
+    };
 
     private void startAsyncNotesListQuery() {
         String selection = (mCurrentFolderId == Notes.ID_ROOT_FOLDER) ? ROOT_FOLDER_SELECTION
@@ -570,10 +572,12 @@ public class NotesListActivity extends ActionBarActivity implements OnClickListe
     }
 
     private void createNewNote() {
+        ActivityOptionsCompat optionsCompat = TransitionHelper.makeOptionsCompat(this);
         Intent intent = new Intent(this, NoteEditActivity.class);
         intent.setAction(Intent.ACTION_INSERT_OR_EDIT);
         intent.putExtra(Notes.INTENT_EXTRA_FOLDER_ID, mCurrentFolderId);
-        this.startActivityForResult(intent, REQUEST_CODE_NEW_NODE);
+        BitmapUtil.storeBitmapInIntent(BitmapUtil.createBitmap(findViewById(R.id.drawer_layout)), intent);
+        ActivityCompat.startActivityForResult(this, intent, REQUEST_CODE_NEW_NODE, optionsCompat.toBundle());
     }
 
     private void batchDelete() {
@@ -659,10 +663,11 @@ public class NotesListActivity extends ActionBarActivity implements OnClickListe
     }
 
     private void openNode(NoteItemData data) {
+        ActivityOptionsCompat optionsCompat = TransitionHelper.makeOptionsCompat(this);
         Intent intent = new Intent(this, NoteEditActivity.class);
         intent.setAction(Intent.ACTION_VIEW);
         intent.putExtra(Intent.EXTRA_UID, data.getId());
-        this.startActivityForResult(intent, REQUEST_CODE_OPEN_NODE);
+        ActivityCompat.startActivityForResult(this, intent, REQUEST_CODE_OPEN_NODE, optionsCompat.toBundle());
     }
 
     private void openFolder(NoteItemData data) {

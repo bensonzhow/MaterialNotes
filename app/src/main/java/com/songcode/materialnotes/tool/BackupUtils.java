@@ -47,19 +47,6 @@ public class BackupUtils {
     // Singleton stuff
     private static BackupUtils sInstance;
 
-    private static LruCache<String, Bitmap> mMemoryCache;
-
-    static {
-        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-        final int cacheSize = maxMemory / 8; // Use 1/8th of the available memory for this memory cache.
-        mMemoryCache = new LruCache<String, Bitmap>(cacheSize) {
-            @Override
-            protected int sizeOf(String key, Bitmap bitmap) {
-                return bitmap.getByteCount() / 1024; // The cache size will be measured in kilobytes rather than number of items.
-            }
-        };
-    }
-
     public static synchronized BackupUtils getInstance(Context context) {
         if (sInstance == null) {
             sInstance = new BackupUtils(context);
@@ -357,40 +344,6 @@ public class BackupUtils {
         }
 
         return null;
-    }
-
-    public static void storeBitmapInIntent(Bitmap bitmap, Intent intent) {
-        String key = "bitmap_" + UUID.randomUUID();
-        storeBitmapInMemCache(key, bitmap);
-        intent.putExtra("bitmap_id", key);
-
-//        ByteArrayOutputStream bs = new ByteArrayOutputStream();
-//        bitmap.compress(Bitmap.CompressFormat.PNG, 0, bs);
-//        intent.putExtra("background", bs.toByteArray());
-    }
-
-    public static void storeBitmapInMemCache(String key, Bitmap bitmap) {
-        if (getBitmapFromMemCache(key) == null) {
-            mMemoryCache.put(key, bitmap);
-        }
-    }
-
-    public static Bitmap getBitmapFromMemCache(String key) {
-        return mMemoryCache.get(key);
-    }
-
-    public static Bitmap fetchBitmapFromIntent(Intent intent) {
-        String key = intent.getStringExtra("bitmap_id");
-//        byte[] byteArray = intent.getByteArrayExtra("background");
-//        Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-        return getBitmapFromMemCache(key);
-    }
-
-    public static Bitmap createBitmap(View v) {
-        Bitmap bitmap = Bitmap.createBitmap(v.getWidth(), v.getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        v.draw(canvas);
-        return bitmap;
     }
 }
 

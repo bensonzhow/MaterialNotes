@@ -1,6 +1,7 @@
 package com.songcode.materialnotes.tool;
 
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -32,13 +33,12 @@ public class Navigator {
 //        fromActivity.overridePendingTransition(R.anim.slide_up, R.anim.scale_down);
 //    }
 //
-//    public static void launchOverlay(BaseActivity fromActivity, View fromView, View backgroundView) {
+//    public static void launchOverlay(Activity fromActivity, Class<?> targetCls  View backgroundView) {
 //        ActivityOptionsCompat options =
 //                TransitionHelper.makeOptionsCompat(
 //                        fromActivity
 //                );
-//        Intent intent = new Intent(fromActivity, BaseActivity.class);
-//        intent.putExtra("fragment_resource_id", R.layout.fragment_overaly);
+//        Intent intent = new Intent(fromActivity, targetCls);
 //
 //        if (backgroundView != null) BitmapUtil.storeBitmapInIntent(BitmapUtil.createBitmap(backgroundView), intent);
 //
