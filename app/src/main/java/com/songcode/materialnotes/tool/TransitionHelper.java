@@ -289,7 +289,7 @@ public class TransitionHelper {
 
     public static class BaseActivity extends ActionBarActivity implements TransitionHelper.Source, TransitionHelper.Listener {
         TransitionHelper transitionHelper;
-
+        public static final int ANIM_DURATION = 600;
         @Override
         public TransitionHelper getTransitionHelper() {
             return transitionHelper;

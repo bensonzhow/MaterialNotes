@@ -30,6 +30,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -55,7 +56,9 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnCreateContextMenuListener;
 import android.view.View.OnTouchListener;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -67,6 +70,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.clans.fab.FloatingActionButton;
 import com.songcode.materialnotes.R;
 import com.songcode.materialnotes.data.Notes;
 import com.songcode.materialnotes.data.Notes.NoteColumns;
@@ -88,7 +92,9 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-public class NotesListActivity extends ActionBarActivity implements OnClickListener, OnItemLongClickListener {
+public class NotesListActivity extends TransitionHelper.BaseActivity implements OnClickListener, OnItemLongClickListener {
+    private int mPreviousVisibleItem;
+
     private static final int FOLDER_NOTE_LIST_QUERY_TOKEN = 0;
 
     private static final int FOLDER_LIST_QUERY_TOKEN = 1;
@@ -125,7 +131,7 @@ public class NotesListActivity extends ActionBarActivity implements OnClickListe
 
     private android.support.v7.app.ActionBar mActionBar;
 
-    private Button mAddNewNote;
+    private FloatingActionButton mAddNewNote;
 
     private boolean mDispatch;
 
@@ -255,10 +261,32 @@ public class NotesListActivity extends ActionBarActivity implements OnClickListe
         mNotesListView.setOnItemLongClickListener(this);
         mNotesListAdapter = new NotesListAdapter(this);
         mNotesListView.setAdapter(mNotesListAdapter);
-        //add new
-        mAddNewNote = (Button) findViewById(R.id.btn_new_note);
+        //add new note btn
+        mAddNewNote = (FloatingActionButton) findViewById(R.id.btn_new_note);
         mAddNewNote.setOnClickListener(this);
-        mAddNewNote.setOnTouchListener(new NewNoteOnTouchListener());
+        mAddNewNote.setShowAnimation(AnimationUtils.loadAnimation(this, R.anim.show_from_bottom));
+        mAddNewNote.setHideAnimation(AnimationUtils.loadAnimation(this, R.anim.hide_to_bottom));
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mAddNewNote.show(true);
+            }
+        }, ANIM_DURATION);
+        mNotesListView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                if (firstVisibleItem > mPreviousVisibleItem) {
+                    mAddNewNote.hide(true);
+                } else if (firstVisibleItem < mPreviousVisibleItem) {
+                    mAddNewNote.show(true);
+                }
+                mPreviousVisibleItem = firstVisibleItem;
+            }
+        });
 
         mDispatch = false;
         mDispatchY = 0;
@@ -454,68 +482,6 @@ public class NotesListActivity extends ActionBarActivity implements OnClickListe
             return true;
         }
     }
-
-    private class NewNoteOnTouchListener implements OnTouchListener {
-
-        public boolean onTouch(View v, MotionEvent event) {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN: {
-                    Display display = getWindowManager().getDefaultDisplay();
-                    int screenHeight = display.getHeight();
-                    int newNoteViewHeight = mAddNewNote.getHeight();
-                    int start = screenHeight - newNoteViewHeight;
-                    int eventY = start + (int) event.getY();
-                    /**
-                     * Minus TitleBar's height
-                     */
-                    if (mState == ListEditState.SUB_FOLDER) {
-                        eventY -= mTitleBar.getHeight();
-                        start -= mTitleBar.getHeight();
-                    }
-                    /**
-                     * HACKME:When click the transparent part of "New Note" button, dispatch
-                     * the event to the list view behind this button. The transparent part of
-                     * "New Note" button could be expressed by formula y=-0.12x+94（Unit:pixel）
-                     * and the line top of the button. The coordinate based on left of the "New
-                     * Note" button. The 94 represents maximum height of the transparent part.
-                     * Notice that, if the background of the button changes, the formula should
-                     * also change. This is very bad, just for the UI designer's strong requirement.
-                     */
-                    if (event.getY() < (event.getX() * (-0.12) + 94)) {
-                        View view = mNotesListView.getChildAt(mNotesListView.getChildCount() - 1
-                                - mNotesListView.getFooterViewsCount());
-                        if (view != null && view.getBottom() > start
-                                && (view.getTop() < (start + 94))) {
-                            mOriginY = (int) event.getY();
-                            mDispatchY = eventY;
-                            event.setLocation(event.getX(), mDispatchY);
-                            mDispatch = true;
-                            return mNotesListView.dispatchTouchEvent(event);
-                        }
-                    }
-                    break;
-                }
-                case MotionEvent.ACTION_MOVE: {
-                    if (mDispatch) {
-                        mDispatchY += (int) event.getY() - mOriginY;
-                        event.setLocation(event.getX(), mDispatchY);
-                        return mNotesListView.dispatchTouchEvent(event);
-                    }
-                    break;
-                }
-                default: {
-                    if (mDispatch) {
-                        event.setLocation(event.getX(), mDispatchY);
-                        mDispatch = false;
-                        return mNotesListView.dispatchTouchEvent(event);
-                    }
-                    break;
-                }
-            }
-            return false;
-        }
-
-    };
 
     private void startAsyncNotesListQuery() {
         String selection = (mCurrentFolderId == Notes.ID_ROOT_FOLDER) ? ROOT_FOLDER_SELECTION

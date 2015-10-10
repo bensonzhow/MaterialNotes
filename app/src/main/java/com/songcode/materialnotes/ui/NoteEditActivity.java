@@ -88,7 +88,6 @@ import java.util.regex.Pattern;
 
 public class NoteEditActivity extends TransitionHelper.BaseActivity implements OnClickListener,
         NoteSettingChangedListener, OnTextViewChangeListener {
-    private static final int ANIM_DURATION = 600;
 
     private class HeadViewHolder {
 
@@ -590,6 +589,10 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
 
     @Override
     public void onBackPressed() {
+        onBackAction();
+    }
+
+    private void onBackAction() {
         if (clearSettingState()) {
             return;
         }
@@ -644,7 +647,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                finish();
+                onBackAction();
                 break;
             case R.id.menu_new_note:
                 createNewNote();
