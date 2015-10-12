@@ -37,6 +37,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -311,7 +312,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
 
     private void setNoteTheme() {
         int primaryColorId = mWorkingNote.getTitleBgResId();
-        mNoteEditorPanel.setBackgroundResource(mWorkingNote.getBgColorResId());
+        mNoteEditorPanel.setBackgroundResource(R.color.primary_color_white_light);
         setTheme(mWorkingNote.getToolbarThemeStyle());
         int primaryColor = getResources().getColor(primaryColorId);
         mToolbar.setBackgroundColor(primaryColor);
@@ -416,7 +417,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         mEditTextList = (LinearLayout) findViewById(R.id.note_edit_list);
 
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && TextUtils.equals(Intent.ACTION_INSERT_OR_EDIT, getIntent().getAction())) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             mAnimNewNoteView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
                 @Override
                 public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
@@ -427,71 +428,88 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         }
     }
 
+    private boolean isActionInsertOrEdit() {
+        return TextUtils.equals(Intent.ACTION_INSERT_OR_EDIT, getIntent().getAction());
+    }
+
+    private boolean isActionActionView() {
+        return TextUtils.equals(Intent.ACTION_VIEW, getIntent().getAction());
+    }
+
     private void animateRevealShow(View targetview, View startView) {
-        final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        int cx = startView.getLeft() + (startView.getWidth() / 2); //middle of button
-        int cy = startView.getTop() + (startView.getHeight() / 2); //middle of button
-        int radius = (int) Math.sqrt(Math.pow(cx, 2) + Math.pow(cy, 2)); //hypotenuse to top left
+        if (isActionInsertOrEdit()) {
+            final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            int cx = startView.getLeft() + (startView.getWidth() / 2); //middle of button
+            int cy = startView.getTop() + (startView.getHeight() / 2); //middle of button
+            int radius = (int) Math.sqrt(Math.pow(cx, 2) + Math.pow(cy, 2)); //hypotenuse to top left
 
-        Animator anim = ViewAnimationUtils.createCircularReveal(targetview, cx, cy, 0, radius);
-        targetview.setVisibility(View.VISIBLE);
-        anim.setInterpolator(new DecelerateInterpolator());
-        anim.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
+            Animator anim = ViewAnimationUtils.createCircularReveal(targetview, cx, cy, 0, radius);
+            targetview.setVisibility(View.VISIBLE);
+            anim.setInterpolator(new DecelerateInterpolator());
+            anim.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
 
-            }
+                }
 
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mNoteEditor.requestFocus();
-                imm.showSoftInput(mNoteEditor, 0);
-            }
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mNoteEditor.requestFocus();
+                    imm.showSoftInput(mNoteEditor, 0);
+                }
 
-            @Override
-            public void onAnimationCancel(Animator animation) {
+                @Override
+                public void onAnimationCancel(Animator animation) {
 
-            }
+                }
 
-            @Override
-            public void onAnimationRepeat(Animator animation) {
+                @Override
+                public void onAnimationRepeat(Animator animation) {
 
-            }
-        });
-        anim.setDuration(ANIM_DURATION);
-        anim.start();
+                }
+            });
+            anim.setDuration(ANIM_DURATION);
+            anim.start();
+        } else if (isActionActionView()) {
+            mAnimBackGroudView.animate().scaleX(.92f).scaleY(.92f).alpha(.6f).setDuration(ANIM_DURATION).setInterpolator(new AccelerateInterpolator()).start();
+            ViewCompat.setTransitionName(mAnimTargetView, "target_anim_view");
+        }
     }
 
     private void animateRevealHide(final View targetview, View startView) {
-        int cx = startView.getLeft() + (startView.getWidth() / 2); //middle of button
-        int cy = startView.getTop() + (startView.getHeight() / 2); //middle of button
-        int radius = (int) Math.sqrt(Math.pow(cx, 2) + Math.pow(cy, 2)); //hypotenuse to top left
+        if (isActionInsertOrEdit()) {
+            int cx = startView.getLeft() + (startView.getWidth() / 2); //middle of button
+            int cy = startView.getTop() + (startView.getHeight() / 2); //middle of button
+            int radius = (int) Math.sqrt(Math.pow(cx, 2) + Math.pow(cy, 2)); //hypotenuse to top left
 
-        Animator anim = ViewAnimationUtils.createCircularReveal(targetview, cx, cy, radius, 0);
-        anim.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                super.onAnimationEnd(animation);
-                targetview.setVisibility(View.INVISIBLE);
-            }
-        });
-        //anim.setInterpolator(new AccelerateInterpolator());
-        anim.setDuration(ANIM_DURATION);
-        anim.start();
+            Animator anim = ViewAnimationUtils.createCircularReveal(targetview, cx, cy, radius, 0);
+            anim.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    super.onAnimationEnd(animation);
+                    targetview.setVisibility(View.INVISIBLE);
+                }
+            });
+            //anim.setInterpolator(new AccelerateInterpolator());
+            anim.setDuration(ANIM_DURATION);
+            anim.start();
 
-        Integer colorTo = getResources().getColor(R.color.primaryColor);
-        Integer colorFrom = getResources().getColor(android.R.color.white);
-        ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
-        colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animator) {
-                targetview.setBackgroundColor((Integer) animator.getAnimatedValue());
-            }
+            Integer colorTo = getResources().getColor(R.color.primaryColor);
+            Integer colorFrom = getResources().getColor(android.R.color.white);
+            ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), colorFrom, colorTo);
+            colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animator) {
+                    targetview.setBackgroundColor((Integer) animator.getAnimatedValue());
+                }
 
-        });
-        colorAnimation.setInterpolator(new AccelerateInterpolator(2));
-        colorAnimation.setDuration(ANIM_DURATION);
-        colorAnimation.start();
+            });
+            colorAnimation.setInterpolator(new AccelerateInterpolator(2));
+            colorAnimation.setDuration(ANIM_DURATION);
+            colorAnimation.start();
+        } else if (isActionActionView()) {
+            mAnimBackGroudView.animate().scaleX(1).scaleY(1).alpha(1).translationY(0).setDuration(ANIM_DURATION).setInterpolator(new AccelerateInterpolator()).start();
+        }
     }
 
     private FloatingActionMenu.OnMenuToggleListener onMenuToggleListener = new FloatingActionMenu.OnMenuToggleListener() {

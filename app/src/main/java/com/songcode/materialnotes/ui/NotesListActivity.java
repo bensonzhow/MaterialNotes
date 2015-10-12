@@ -34,6 +34,8 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.util.Pair;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -166,6 +168,7 @@ public class NotesListActivity extends TransitionHelper.BaseActivity implements 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.note_list);
         setContentView(R.layout.note_list);
         initResources();
 
@@ -628,11 +631,12 @@ public class NotesListActivity extends TransitionHelper.BaseActivity implements 
         }
     }
 
-    private void openNode(NoteItemData data) {
-        ActivityOptionsCompat optionsCompat = TransitionHelper.makeOptionsCompat(this);
+    private void openNode(NoteItemData data, View animStartView) {
+        ActivityOptionsCompat optionsCompat = TransitionHelper.makeOptionsCompat(this, Pair.create(animStartView, "target_anim_view"));
         Intent intent = new Intent(this, NoteEditActivity.class);
         intent.setAction(Intent.ACTION_VIEW);
         intent.putExtra(Intent.EXTRA_UID, data.getId());
+        BitmapUtil.storeBitmapInIntent(BitmapUtil.createBitmap(findViewById(R.id.drawer_layout)), intent);
         ActivityCompat.startActivityForResult(this, intent, REQUEST_CODE_OPEN_NODE, optionsCompat.toBundle());
     }
 
@@ -999,7 +1003,7 @@ public class NotesListActivity extends TransitionHelper.BaseActivity implements 
                                 || item.getType() == Notes.TYPE_SYSTEM) {
                             openFolder(item);
                         } else if (item.getType() == Notes.TYPE_NOTE) {
-                            openNode(item);
+                            openNode(item, view);
                         } else {
                             Log.e(TAG, "Wrong note type in NOTE_LIST");
                         }
@@ -1007,7 +1011,7 @@ public class NotesListActivity extends TransitionHelper.BaseActivity implements 
                     case SUB_FOLDER:
                     case CALL_RECORD_FOLDER:
                         if (item.getType() == Notes.TYPE_NOTE) {
-                            openNode(item);
+                            openNode(item, view);
                         } else {
                             Log.e(TAG, "Wrong note type in SUB_FOLDER");
                         }
