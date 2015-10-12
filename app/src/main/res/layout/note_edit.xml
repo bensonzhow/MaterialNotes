@@ -2,6 +2,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/note_bg"
     android:layout_width="match_parent"
@@ -367,22 +368,37 @@
             </FrameLayout>
         </LinearLayout>
 
-        <Button
+        <!-- 动画起始锚点-->
+        <com.github.clans.fab.FloatingActionButton
             android:id="@+id/anim_new_note_view"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
             android:layout_gravity="bottom|right"
             android:layout_marginBottom="16dp"
             android:layout_marginEnd="16dp"
-            android:background="@drawable/circle_button"
-            android:gravity="center"
-            android:padding="0dp"
-            android:text="+"
-            android:textColor="@android:color/white"
-            android:textSize="28sp"
-            android:visibility="invisible"/>
+            android:src="@drawable/ic_edit"
+            fab:fab_elevationCompat="6dp"
+            android:visibility="invisible"
+            tools:visibility="visible"/>
+
+        <com.github.clans.fab.FloatingActionMenu
+            android:id="@+id/note_edit_floating_action_menu"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:paddingRight="16dp"
+            android:paddingBottom="16dp"
+            android:paddingLeft="10dp"
+            fab:menu_icon="@drawable/ic_menu"
+            fab:menu_labels_ellipsize="end"
+            fab:menu_labels_singleLine="true"
+            fab:menu_backgroundColor="#ccffffff"
+            fab:menu_fab_label="@string/preferences_title">
+
+        </com.github.clans.fab.FloatingActionMenu>
     </FrameLayout>
 </LinearLayout>
 

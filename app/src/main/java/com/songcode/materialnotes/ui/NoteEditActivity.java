@@ -34,6 +34,7 @@ import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.widget.Toolbar;
@@ -61,9 +62,11 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.clans.fab.FloatingActionButton;
+import com.github.clans.fab.FloatingActionMenu;
+import com.github.clans.fab.Label;
 import com.songcode.materialnotes.R;
 import com.songcode.materialnotes.data.Notes;
 import com.songcode.materialnotes.data.Notes.TextNote;
@@ -79,8 +82,12 @@ import com.songcode.materialnotes.ui.NoteEditText.OnTextViewChangeListener;
 import com.songcode.materialnotes.widget.NoteWidgetProvider_2x;
 import com.songcode.materialnotes.widget.NoteWidgetProvider_4x;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -135,13 +142,15 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
 
     private HeadViewHolder mNoteHeaderHolder;
 
-    private View animBackGroudView;
+    private View mAnimBackGroudView;
 
     private View mAnimNewNoteView;
 
     private View mAnimTargetView;
 
     private View mBackGroudView;
+
+    private FloatingActionMenu mMenu;
 
     private Toolbar mToolbar;
 
@@ -302,7 +311,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
 
         String dateStr = DateUtils.formatDateTime(this,
                 mWorkingNote.getModifiedDate(), DateUtils.FORMAT_SHOW_DATE
-                        |  DateUtils.FORMAT_SHOW_YEAR );
+                        | DateUtils.FORMAT_SHOW_YEAR);
         mToolbar.setTitle(dateStr);
 
         /**
@@ -383,6 +392,11 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         mNoteHeaderHolder.ibSetBgColor = (ImageView) findViewById(R.id.btn_set_bg_color);
         mNoteHeaderHolder.ibSetBgColor.setOnClickListener(this);
         mNoteEditor = (EditText) findViewById(R.id.note_edit_view);
+        //floating action menu
+        mMenu = (FloatingActionMenu) findViewById(R.id.note_edit_floating_action_menu);
+        mMenu.setClosedOnTouchOutside(true);
+        mMenu.setOnMenuButtonClickListener(onClickFabMenu);
+
         //toolbar
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
@@ -390,10 +404,10 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
 
         mNoteEditorPanel = findViewById(R.id.sv_note_edit);
         mNoteBgColorSelector = findViewById(R.id.note_bg_color_selector);
-        animBackGroudView = findViewById(R.id.anim_back_groud_layout);
+        mAnimBackGroudView = findViewById(R.id.anim_back_groud_layout);
         //for anim backgroud
         if (getIntent().hasExtra("bitmap_id")) {
-            animBackGroudView.setBackground(new BitmapDrawable(getResources(), BitmapUtil.fetchBitmapFromIntent(getIntent())));
+            mAnimBackGroudView.setBackground(new BitmapDrawable(getResources(), BitmapUtil.fetchBitmapFromIntent(getIntent())));
         }
 
         mAnimNewNoteView = findViewById(R.id.anim_new_note_view);
@@ -470,8 +484,8 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
     }
 
     private void animateRevealHide(final View targetview, View startView) {
-        int cx = startView.getLeft() + (startView.getWidth()/2); //middle of button
-        int cy = startView.getTop() + (startView.getHeight()/2); //middle of button
+        int cx = startView.getLeft() + (startView.getWidth() / 2); //middle of button
+        int cy = startView.getTop() + (startView.getHeight() / 2); //middle of button
         int radius = (int) Math.sqrt(Math.pow(cx, 2) + Math.pow(cy, 2)); //hypotenuse to top left
 
         Animator anim = ViewAnimationUtils.createCircularReveal(targetview, cx, cy, radius, 0);
@@ -492,13 +506,99 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         colorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animator) {
-                targetview.setBackgroundColor((Integer)animator.getAnimatedValue());
+                targetview.setBackgroundColor((Integer) animator.getAnimatedValue());
             }
 
         });
         colorAnimation.setInterpolator(new AccelerateInterpolator(2));
         colorAnimation.setDuration(ANIM_DURATION);
         colorAnimation.start();
+    }
+
+    private OnClickListener onClickFabMenu = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (isFinishing()) {
+                return;
+            }
+
+            if (mMenu.isOpened()) {
+                mMenu.close(true);
+            } else {
+                mMenu.open(true);
+                prepareFabMenu();
+            }
+
+
+        }
+    };
+
+    private void prepareFabMenu() {
+        clearSettingState();
+        mMenu.removeAllMenuButtons();
+
+        //prepare menu items
+
+        //menu string ids
+        ArrayList<Integer> ids = new ArrayList<>();
+        if (mWorkingNote.getFolderId() != Notes.ID_CALL_RECORD_FOLDER) {
+            ids.add(R.string.notelist_menu_new);
+        }
+        ids.add(R.string.menu_delete);
+        ids.add(R.string.menu_font_size);
+        if (mWorkingNote.getCheckListMode() == TextNote.MODE_CHECK_LIST) {
+            ids.add(R.string.menu_normal_mode);
+        } else {
+            ids.add(R.string.menu_list_mode);
+        }
+        ids.add(R.string.menu_share);
+        ids.add(R.string.menu_send_to_desktop);
+        if (mWorkingNote.hasClockAlert()) {
+            ids.add(R.string.menu_remove_remind);
+        } else {
+            ids.add(R.string.menu_alert);
+        }
+        generateFloatingActionButton(ids);
+    }
+
+    private void generateFloatingActionButton(List<Integer> stringIds) {
+        if (mMenu == null) {
+            Log.e(TAG, "error: floating button menu is null");
+            return;
+        }
+        int delay = mMenu.getAnimationDelayPerItem() * stringIds.size();
+        for (int stringId : stringIds) {
+            final FloatingActionButton floatingActionButton = new FloatingActionButton(this);
+            floatingActionButton.setButtonSize(FloatingActionButton.SIZE_MINI);
+            floatingActionButton.hide(false);
+            floatingActionButton.setOnClickListener(this);
+            FloatingActionButtonDecorator fabDecorator = new FloatingActionButtonDecorator(floatingActionButton);
+            fabDecorator.setLabelText(stringId);
+            mMenu.addMenuButton(floatingActionButton);
+
+            final Label label = (Label) floatingActionButton.getTag(com.github.clans.fab.R.id.fab_label);
+            label.setVisibility(View.INVISIBLE);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    floatingActionButton.show(true);
+                    //通过反射调用受保护的方法
+                    Class labelClass = label.getClass();
+                    try {
+                        Method show = labelClass.getDeclaredMethod("show", boolean.class);
+                        show.setAccessible(true);
+                        show.invoke(label, true);
+                    } catch (NoSuchMethodException e) {
+                        e.printStackTrace();
+                    } catch (InvocationTargetException e) {
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }, delay);
+            delay -= mMenu.getAnimationDelayPerItem();
+        }
     }
 
     @Override
@@ -553,6 +653,46 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
                         TextAppearanceResources.getTexAppearanceResource(mFontSizeId));
             }
             mFontSizeSelector.setVisibility(View.GONE);
+        }
+
+        // floating action menu onclick
+
+        int stringId = (int) v.getTag();
+        if (stringId != 0) {
+            mMenu.close(false);
+        }
+        switch (stringId) {
+            case R.string.notelist_menu_new:
+                createNewNote();
+                break;
+            case R.string.menu_delete:
+                deleteNote();
+                break;
+            case R.string.menu_font_size:
+                showFontSeting();
+                break;
+            case R.string.menu_normal_mode:
+                mWorkingNote.setCheckListMode(0);
+                break;
+            case R.string.menu_list_mode:
+                mWorkingNote.setCheckListMode(TextNote.MODE_CHECK_LIST);
+                break;
+            case R.string.menu_share:
+                getWorkingText();
+                sendTo(this, mWorkingNote.getContent());
+                break;
+            case R.string.menu_send_to_desktop:
+                sendToDesktop();
+                break;
+            case R.string.menu_remove_remind:
+                mWorkingNote.setAlertDate(0, false);
+                break;
+            case R.string.menu_alert:
+                setReminder();
+                break;
+            default:
+                Log.i(TAG, "do noting");
+                break;
         }
     }
 
@@ -622,23 +762,10 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
                 createNewNote();
                 break;
             case R.id.menu_delete:
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle(getString(R.string.alert_title_delete));
-                builder.setIcon(android.R.drawable.ic_dialog_alert);
-                builder.setMessage(getString(R.string.alert_message_delete_note));
-                builder.setPositiveButton(android.R.string.ok,
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                deleteCurrentNote();
-                                finish();
-                            }
-                        });
-                builder.setNegativeButton(android.R.string.cancel, null);
-                builder.show();
+                deleteNote();
                 break;
             case R.id.menu_font_size:
-                mFontSizeSelector.setVisibility(View.VISIBLE);
-                findViewById(sFontSelectorSelectionMap.get(mFontSizeId)).setVisibility(View.VISIBLE);
+                showFontSeting();
                 break;
             case R.id.menu_list_mode:
                 mWorkingNote.setCheckListMode(mWorkingNote.getCheckListMode() == 0 ?
@@ -661,6 +788,27 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
                 break;
         }
         return true;
+    }
+
+    private void showFontSeting() {
+        mFontSizeSelector.setVisibility(View.VISIBLE);
+        findViewById(sFontSelectorSelectionMap.get(mFontSizeId)).setVisibility(View.VISIBLE);
+    }
+
+    private void deleteNote() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getString(R.string.alert_title_delete));
+        builder.setIcon(android.R.drawable.ic_dialog_alert);
+        builder.setMessage(getString(R.string.alert_message_delete_note));
+        builder.setPositiveButton(android.R.string.ok,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteCurrentNote();
+                        finish();
+                    }
+                });
+        builder.setNegativeButton(android.R.string.cancel, null);
+        builder.show();
     }
 
     private void setReminder() {
@@ -995,5 +1143,16 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
             return dateStr + " | ⏰️️" + alertStr;
         }
         return dateStr;
+    }
+
+    private class FloatingActionButtonDecorator {
+        private FloatingActionButton fab;
+        public FloatingActionButtonDecorator(FloatingActionButton fab) {
+            this.fab = fab;
+        }
+        public void setLabelText(int stringId) {
+            fab.setLabelText(getString(stringId));
+            fab.setTag(stringId);
+        }
     }
 }
