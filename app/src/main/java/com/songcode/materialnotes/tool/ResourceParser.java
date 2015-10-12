@@ -24,13 +24,13 @@ import com.songcode.materialnotes.ui.NotesPreferenceActivity;
 
 public class ResourceParser {
 
-    public static final int YELLOW           = 0;
-    public static final int BLUE             = 1;
-    public static final int WHITE            = 2;
-    public static final int GREEN            = 3;
-    public static final int RED              = 4;
+    public static final int BLUE             = 0;
+    public static final int RED              = 1;
+    public static final int GREEN            = 2;
+    public static final int WHITE            = 3;
+    public static final int BROWN            = 4;
 
-    public static final int BG_DEFAULT_COLOR = YELLOW;
+    public static final int BG_DEFAULT_COLOR = BROWN;
 
     public static final int TEXT_SMALL       = 0;
     public static final int TEXT_MEDIUM      = 1;

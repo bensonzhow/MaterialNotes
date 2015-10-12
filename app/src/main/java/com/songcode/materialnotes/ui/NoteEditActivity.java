@@ -100,24 +100,14 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         public ImageView ibSetBgColor;
     }
 
-    private static final Map<Integer, Integer> sBgSelectorBtnsMap = new HashMap<Integer, Integer>();
+    private static final Map<Integer, Integer> colorBtnMap = new HashMap<Integer, Integer>();
 
     static {
-        sBgSelectorBtnsMap.put(R.id.iv_bg_yellow, ResourceParser.YELLOW);
-        sBgSelectorBtnsMap.put(R.id.iv_bg_red, ResourceParser.RED);
-        sBgSelectorBtnsMap.put(R.id.iv_bg_blue, ResourceParser.BLUE);
-        sBgSelectorBtnsMap.put(R.id.iv_bg_green, ResourceParser.GREEN);
-        sBgSelectorBtnsMap.put(R.id.iv_bg_white, ResourceParser.WHITE);
-    }
-
-    private static final Map<Integer, Integer> sBgSelectorSelectionMap = new HashMap<Integer, Integer>();
-
-    static {
-        sBgSelectorSelectionMap.put(ResourceParser.YELLOW, R.id.iv_bg_yellow_select);
-        sBgSelectorSelectionMap.put(ResourceParser.RED, R.id.iv_bg_red_select);
-        sBgSelectorSelectionMap.put(ResourceParser.BLUE, R.id.iv_bg_blue_select);
-        sBgSelectorSelectionMap.put(ResourceParser.GREEN, R.id.iv_bg_green_select);
-        sBgSelectorSelectionMap.put(ResourceParser.WHITE, R.id.iv_bg_white_select);
+        colorBtnMap.put(R.string.theme_blue, ResourceParser.BLUE);
+        colorBtnMap.put(R.string.theme_red, ResourceParser.RED);
+        colorBtnMap.put(R.string.theme_green, ResourceParser.GREEN);
+        colorBtnMap.put(R.string.theme_brown, ResourceParser.BROWN);
+        colorBtnMap.put(R.string.theme_white, ResourceParser.WHITE);
     }
 
     private static final Map<Integer, Integer> sFontSizeBtnsMap = new HashMap<Integer, Integer>();
@@ -154,8 +144,6 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
 
     private Toolbar mToolbar;
 
-    private View mNoteBgColorSelector;
-
     private View mFontSizeSelector;
 
     private EditText mNoteEditor;
@@ -165,7 +153,10 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
     private WorkingNote mWorkingNote;
 
     private SharedPreferences mSharedPrefs;
+
     private int mFontSizeId;
+
+    private boolean isShowTheme;
 
     private static final String PREFERENCE_FONT_SIZE = "pref_font_size";
 
@@ -304,9 +295,6 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
             mNoteEditor.setText(getHighlightQueryResult(mWorkingNote.getContent(), mUserQuery));
             mNoteEditor.setSelection(mNoteEditor.getText().length());
         }
-        for (Integer id : sBgSelectorSelectionMap.keySet()) {
-            findViewById(sBgSelectorSelectionMap.get(id)).setVisibility(View.GONE);
-        }
         setNoteTheme();
 
         String dateStr = DateUtils.formatDateTime(this,
@@ -328,6 +316,8 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         int primaryColor = getResources().getColor(primaryColorId);
         mToolbar.setBackgroundColor(primaryColor);
         mBackGroudView.setBackgroundColor(primaryColor);
+        mMenu.setMenuButtonColorNormalResId(primaryColorId);
+        mMenu.setMenuButtonColorPressedResId(mWorkingNote.getBgColorResId());
     }
 
     @Override
@@ -358,12 +348,6 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        if (mNoteBgColorSelector.getVisibility() == View.VISIBLE
-                && !inRangeOfView(mNoteBgColorSelector, ev)) {
-            mNoteBgColorSelector.setVisibility(View.GONE);
-            return true;
-        }
-
         if (mFontSizeSelector.getVisibility() == View.VISIBLE
                 && !inRangeOfView(mFontSizeSelector, ev)) {
             mFontSizeSelector.setVisibility(View.GONE);
@@ -395,6 +379,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         //floating action menu
         mMenu = (FloatingActionMenu) findViewById(R.id.note_edit_floating_action_menu);
         mMenu.setClosedOnTouchOutside(true);
+        mMenu.setOnMenuToggleListener(onMenuToggleListener);
         mMenu.setOnMenuButtonClickListener(onClickFabMenu);
 
         //toolbar
@@ -403,7 +388,6 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mNoteEditorPanel = findViewById(R.id.sv_note_edit);
-        mNoteBgColorSelector = findViewById(R.id.note_bg_color_selector);
         mAnimBackGroudView = findViewById(R.id.anim_back_groud_layout);
         //for anim backgroud
         if (getIntent().hasExtra("bitmap_id")) {
@@ -412,11 +396,6 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
 
         mAnimNewNoteView = findViewById(R.id.anim_new_note_view);
         mAnimTargetView = findViewById(R.id.anim_new_note_layout);
-
-        for (int id : sBgSelectorBtnsMap.keySet()) {
-            ImageView iv = (ImageView) findViewById(id);
-            iv.setOnClickListener(this);
-        }
 
         mFontSizeSelector = findViewById(R.id.font_size_selector);
         for (int id : sFontSizeBtnsMap.keySet()) {
@@ -515,31 +494,35 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         colorAnimation.start();
     }
 
+    private FloatingActionMenu.OnMenuToggleListener onMenuToggleListener = new FloatingActionMenu.OnMenuToggleListener() {
+        @Override
+        public void onMenuToggle(boolean opened) {
+            if (isShowTheme && !opened) {
+                isShowTheme = false;
+                showThemeMenu();
+            }
+        }
+    };
+
     private OnClickListener onClickFabMenu = new OnClickListener() {
         @Override
         public void onClick(View v) {
             if (isFinishing()) {
                 return;
             }
-
             if (mMenu.isOpened()) {
                 mMenu.close(true);
             } else {
-                mMenu.open(true);
                 prepareFabMenu();
             }
-
-
         }
     };
 
     private void prepareFabMenu() {
         clearSettingState();
-        mMenu.removeAllMenuButtons();
 
         //prepare menu items
-
-        //menu string ids
+        //...menu string ids
         ArrayList<Integer> ids = new ArrayList<>();
         if (mWorkingNote.getFolderId() != Notes.ID_CALL_RECORD_FOLDER) {
             ids.add(R.string.notelist_menu_new);
@@ -558,18 +541,22 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         } else {
             ids.add(R.string.menu_alert);
         }
-        generateFloatingActionButton(ids);
+        ids.add(R.string.notelist_menu_color_theme);
+        addMenuItemAndOpenMenu(ids);
     }
 
-    private void generateFloatingActionButton(List<Integer> stringIds) {
+    private void addMenuItemAndOpenMenu(List<Integer> stringIds) {
         if (mMenu == null) {
             Log.e(TAG, "error: floating button menu is null");
             return;
         }
+        mMenu.removeAllMenuButtons();
         int delay = mMenu.getAnimationDelayPerItem() * stringIds.size();
         for (int stringId : stringIds) {
             final FloatingActionButton floatingActionButton = new FloatingActionButton(this);
             floatingActionButton.setButtonSize(FloatingActionButton.SIZE_MINI);
+            floatingActionButton.setColorNormalResId(mWorkingNote.getTitleBgResId());
+            floatingActionButton.setColorPressedResId(mWorkingNote.getBgColorResId());
             floatingActionButton.hide(false);
             floatingActionButton.setOnClickListener(this);
             FloatingActionButtonDecorator fabDecorator = new FloatingActionButtonDecorator(floatingActionButton);
@@ -578,27 +565,8 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
 
             final Label label = (Label) floatingActionButton.getTag(com.github.clans.fab.R.id.fab_label);
             label.setVisibility(View.INVISIBLE);
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    floatingActionButton.show(true);
-                    //通过反射调用受保护的方法
-                    Class labelClass = label.getClass();
-                    try {
-                        Method show = labelClass.getDeclaredMethod("show", boolean.class);
-                        show.setAccessible(true);
-                        show.invoke(label, true);
-                    } catch (NoSuchMethodException e) {
-                        e.printStackTrace();
-                    } catch (InvocationTargetException e) {
-                        e.printStackTrace();
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }, delay);
-            delay -= mMenu.getAnimationDelayPerItem();
         }
+        mMenu.open(true);
     }
 
     @Override
@@ -631,16 +599,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
 
     public void onClick(View v) {
         int id = v.getId();
-        if (id == R.id.btn_set_bg_color) {
-            mNoteBgColorSelector.setVisibility(View.VISIBLE);
-            findViewById(sBgSelectorSelectionMap.get(mWorkingNote.getBgColorId())).setVisibility(
-                    -View.VISIBLE);
-        } else if (sBgSelectorBtnsMap.containsKey(id)) {
-            findViewById(sBgSelectorSelectionMap.get(mWorkingNote.getBgColorId())).setVisibility(
-                    View.GONE);
-            mWorkingNote.setBgColorId(sBgSelectorBtnsMap.get(id));
-            mNoteBgColorSelector.setVisibility(View.GONE);
-        } else if (sFontSizeBtnsMap.containsKey(id)) {
+        if (sFontSizeBtnsMap.containsKey(id)) {
             findViewById(sFontSelectorSelectionMap.get(mFontSizeId)).setVisibility(View.GONE);
             mFontSizeId = sFontSizeBtnsMap.get(id);
             mSharedPrefs.edit().putInt(PREFERENCE_FONT_SIZE, mFontSizeId).commit();
@@ -662,7 +621,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
 
         int stringId = (int) v.getTag();
         if (stringId != 0) {
-            mMenu.close(false);
+            mMenu.close(true);
         }
         switch (stringId) {
             case R.string.notelist_menu_new:
@@ -693,10 +652,30 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
             case R.string.menu_alert:
                 setReminder();
                 break;
+            case R.string.notelist_menu_color_theme:
+                isShowTheme = true;
+                break;
+            case R.string.theme_blue:
+            case R.string.theme_red:
+            case R.string.theme_green:
+            case R.string.theme_brown:
+            case R.string.theme_white:
+                mWorkingNote.setBgColorId(colorBtnMap.get(stringId));
+                break;
             default:
                 Log.i(TAG, "do noting");
                 break;
         }
+    }
+
+    private void showThemeMenu() {
+        ArrayList<Integer> colorIds = new ArrayList<>();
+        colorIds.add(R.string.theme_blue);
+        colorIds.add(R.string.theme_red);
+        colorIds.add(R.string.theme_green);
+        colorIds.add(R.string.theme_brown);
+        colorIds.add(R.string.theme_white);
+        addMenuItemAndOpenMenu(colorIds);
     }
 
     @Override
@@ -714,10 +693,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
     }
 
     private boolean clearSettingState() {
-        if (mNoteBgColorSelector.getVisibility() == View.VISIBLE) {
-            mNoteBgColorSelector.setVisibility(View.GONE);
-            return true;
-        } else if (mFontSizeSelector.getVisibility() == View.VISIBLE) {
+        if (mFontSizeSelector.getVisibility() == View.VISIBLE) {
             mFontSizeSelector.setVisibility(View.GONE);
             return true;
         }
@@ -725,8 +701,6 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
     }
 
     public void onBackgroundColorChanged() {
-        findViewById(sBgSelectorSelectionMap.get(mWorkingNote.getBgColorId())).setVisibility(
-                View.VISIBLE);
         setNoteTheme();
     }
 
@@ -1158,6 +1132,60 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         public void setLabelText(int stringId) {
             fab.setLabelText(getString(stringId));
             fab.setTag(stringId);
+            switch (stringId) {
+                case R.string.notelist_menu_new:
+                    fab.setImageResource(R.drawable.edit_note);
+                    break;
+                case R.string.menu_delete:
+                    fab.setImageResource(R.drawable.delete);
+                    break;
+                case R.string.menu_font_size:
+                    fab.setImageResource(R.drawable.font_size);
+                    break;
+                case R.string.menu_normal_mode:
+                    fab.setImageResource(R.drawable.exit_todo_list);
+                    break;
+                case R.string.menu_list_mode:
+                    fab.setImageResource(R.drawable.todo_list);
+                    break;
+                case R.string.menu_share:
+                    fab.setImageResource(R.drawable.share_other);
+                    break;
+                case R.string.menu_send_to_desktop:
+                    fab.setImageResource(R.drawable.send_desktop);
+                    break;
+                case R.string.menu_remove_remind:
+                    fab.setImageResource(R.drawable.delete);
+                    break;
+                case R.string.menu_alert:
+                    fab.setImageResource(R.drawable.clock_alert);
+                    break;
+                case R.string.notelist_menu_color_theme:
+                    fab.setImageResource(R.drawable.theme_color);
+                    break;
+                case R.string.theme_blue:
+                    fab.setColorNormalResId(R.color.primary_color_blue);
+                    fab.setColorPressedResId(R.color.primary_color_blue_light);
+                    break;
+                case R.string.theme_red:
+                    fab.setColorNormalResId(R.color.primary_color_red);
+                    fab.setColorPressedResId(R.color.primary_color_red_light);
+                    break;
+                case R.string.theme_green:
+                    fab.setColorNormalResId(R.color.primary_color_green);
+                    fab.setColorPressedResId(R.color.primary_color_green_light);
+                    break;
+                case R.string.theme_brown:
+                    fab.setColorNormalResId(R.color.primary_color_brown);
+                    fab.setColorPressedResId(R.color.primary_color_brown_light);
+                    break;
+                case R.string.theme_white:
+                    fab.setColorNormalResId(R.color.primary_color_white);
+                    fab.setColorPressedResId(R.color.primary_color_white_light);
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

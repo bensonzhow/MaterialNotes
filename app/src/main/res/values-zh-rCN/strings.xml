@@ -24,6 +24,7 @@
     <string name="widget_under_visit_mode">访客模式下，记内容不可见</string>
     <string name="notelist_string_info">...</string>
     <string name="notelist_menu_new">新建记</string>
+    <string name="notelist_menu_color_theme">主题</string>
     <string name="delete_remind_time_message">成功删除提醒</string>
     <string name="set_remind_time_message">创建提醒</string>
     <string name="note_alert_expired">已过期</string>

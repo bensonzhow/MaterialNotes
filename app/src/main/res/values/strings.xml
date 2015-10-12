@@ -24,6 +24,7 @@
     <string name="widget_under_visit_mode">Privacy mode，can not see note content</string>
     <string name="notelist_string_info">...</string>
     <string name="notelist_menu_new">Add note</string>
+    <string name="notelist_menu_color_theme">theme</string>
     <string name="delete_remind_time_message">Delete reminder successfully</string>
     <string name="set_remind_time_message">Set reminder</string>
     <string name="note_alert_expired">Expired</string>
@@ -132,4 +133,10 @@
         <item quantity="other"><xliff:g id="number" example="15">%1$s</xliff:g> results for \"<xliff:g id="search" example="???">%2$s</xliff:g>\"</item>
     </plurals>
 
+    <!-- theme colors-->
+    <string name="theme_blue">blue</string>
+    <string name="theme_red">red</string>
+    <string name="theme_green">green</string>
+    <string name="theme_brown">brown</string>
+    <string name="theme_white">white</string>
 </resources>
