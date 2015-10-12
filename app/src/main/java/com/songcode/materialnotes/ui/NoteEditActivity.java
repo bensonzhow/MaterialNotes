@@ -656,6 +656,9 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         }
 
         // floating action menu onclick
+        if (v.getTag() == null) {
+            return;
+        }
 
         int stringId = (int) v.getTag();
         if (stringId != 0) {
@@ -1147,9 +1150,11 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
 
     private class FloatingActionButtonDecorator {
         private FloatingActionButton fab;
+
         public FloatingActionButtonDecorator(FloatingActionButton fab) {
             this.fab = fab;
         }
+
         public void setLabelText(int stringId) {
             fab.setLabelText(getString(stringId));
             fab.setTag(stringId);
