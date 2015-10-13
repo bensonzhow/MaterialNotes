@@ -377,6 +377,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
         mNoteHeaderHolder.ibSetBgColor = (ImageView) findViewById(R.id.btn_set_bg_color);
         mNoteHeaderHolder.ibSetBgColor.setOnClickListener(this);
         mNoteEditor = (EditText) findViewById(R.id.note_edit_view);
+        mNoteEditor.setAlpha(0);
         //floating action menu
         mMenu = (FloatingActionMenu) findViewById(R.id.note_edit_floating_action_menu);
         mMenu.setClosedOnTouchOutside(true);
@@ -472,6 +473,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
             anim.start();
         } else if (isActionActionView()) {
             mAnimBackGroudView.animate().scaleX(.92f).scaleY(.92f).alpha(.6f).setDuration(ANIM_DURATION).setInterpolator(new AccelerateInterpolator()).start();
+            mNoteEditor.animate().alpha(1).setStartDelay(400).setDuration(ANIM_DURATION);
             ViewCompat.setTransitionName(mAnimTargetView, "target_anim_view");
         }
     }
@@ -509,6 +511,7 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
             colorAnimation.start();
         } else if (isActionActionView()) {
             mAnimBackGroudView.animate().scaleX(1).scaleY(1).alpha(1).translationY(0).setDuration(ANIM_DURATION).setInterpolator(new AccelerateInterpolator()).start();
+            mNoteEditor.animate().alpha(0).setDuration(100).start();
         }
     }
 
@@ -569,7 +572,6 @@ public class NoteEditActivity extends TransitionHelper.BaseActivity implements O
             return;
         }
         mMenu.removeAllMenuButtons();
-        int delay = mMenu.getAnimationDelayPerItem() * stringIds.size();
         for (int stringId : stringIds) {
             final FloatingActionButton floatingActionButton = new FloatingActionButton(this);
             floatingActionButton.setButtonSize(FloatingActionButton.SIZE_MINI);

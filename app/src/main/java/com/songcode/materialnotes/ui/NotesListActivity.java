@@ -632,7 +632,8 @@ public class NotesListActivity extends TransitionHelper.BaseActivity implements 
     }
 
     private void openNode(NoteItemData data, View animStartView) {
-        ActivityOptionsCompat optionsCompat = TransitionHelper.makeOptionsCompat(this, Pair.create(animStartView, "target_anim_view"));
+        ActivityOptionsCompat optionsCompat = TransitionHelper.makeOptionsCompat(this,
+                Pair.create(animStartView, "target_anim_view"));
         Intent intent = new Intent(this, NoteEditActivity.class);
         intent.setAction(Intent.ACTION_VIEW);
         intent.putExtra(Intent.EXTRA_UID, data.getId());
