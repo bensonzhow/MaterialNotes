@@ -169,7 +169,6 @@ public class NotesListActivity extends TransitionHelper.BaseActivity implements 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.note_list);
-        setContentView(R.layout.note_list);
         initResources();
 
         /**
